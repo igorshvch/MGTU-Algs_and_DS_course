@@ -83,7 +83,66 @@ class SparseCRM():
             m_c.sym_matrix_print(unpack_matrix, rows)
         return unpack_matrix
 
-    def addition(self, matrix):
+    def addition_fail2(self, matrix):
+        res_matrix = SparseCRM()
+        if (len(self.JR) != len(matrix.JR)) or (len(self.JC) != len(matrix.JC)): #проверяем размерность
+            raise ValueError("(self.JR != matrix.JR) or (self.CR != matrix.CR)")
+        res_matrix.JR = [-1 for i in self.JR] #инициализируем массив с индексами первых элементов строк значением -1
+        res_matrix.JC = [-1 for i in self.JC] #инициализируем массив с индексами первых элементов столбцов значением -1
+        kStrok = len(self.JR) #записываем количество строк
+        kStolb = len(self.JC) #записываем количество столбцов
+        N_1 = len(self.AN) #записываем количество ненулевых элементов матрицы-первого слагаемого (self)
+        N_2 = len(matrix.AN) #записываем количество ненулевых элементов матрицы-второго слагаемого (matrix)
+        N_res = 0 #счетчик числа элементов в res_matrix.AN и одновременно указатель на последний элемент
+        kB = 0 #указатель на индекс массива AN матрицы-первого слагаемого (self)
+        kC = 0 #указатель на индекс массива AN матрицы-второго слагаемого (matrix)
+
+        for i in range(kStrok): #цикл по строкам от 0 до kStrok-1
+            y1 = self._find_y_coord(kB)
+            y2 = matrix._find_y_coord(kC)
+            y1_new = None
+            y2_new = None
+            while True:
+                print("="*8)
+                x1 = self._find_x_coord(kB)
+                x2 = matrix._find_x_coord(kC)
+                print("x1: {}\ty1: {}\ty1_new: {}\nx2: {}\ty2: {}\ty2_new: {}\nkB: {}\nkC: {}\nres_matrix.AN: {}".format(x1,y1, y1_new,x2,y2,y2_new,kB,kC,res_matrix.AN))
+                print()
+                if x1 != x2: #ЗДЕСЬ ПЕРВАЯ ЗВЕЗДОЧКА!!!
+                    print("=> x1 != x2", end="  ")
+                    if x2 > x1: #перепишем элемент из self.AN, на который указывает kB, в res_matrix.AN, поскольку он оказалеся непарным и "стоит левее"
+                        print("x2 > x1")
+                        res_matrix.AN.append(self.AN[kB])
+                        kB += 1
+                    elif x1 > x2: #перепишем элемент из matrix.AN, на который указывает kC, в res_matrix.AN, поскольку он оказалеся непарным и "стоит левее"
+                        print("x1 > x2")
+                        res_matrix.AN.append(matrix.AN[kC])
+                        kC += 1
+                else:
+                    print("=> x1 == x2")
+                    elem_sum = self.AN[kB] + matrix.AN[kC]
+                    if elem_sum: #если сумма элементов ненулевая
+                        res_matrix.AN.append(elem_sum) #ЗДЕСЬ ВТОРАЯ ЗВЕЗДОЧКА!!!!
+                    kB += 1
+                    kC += 1
+                y1_new = self._find_y_coord(kB)
+                y2_new = matrix._find_y_coord(kC)
+                print()
+                print("x1: {}\ty1: {}\ty1_new: {}\nx2: {}\ty2: {}\ty2_new: {}\nkB: {}\nkC: {}\nres_matrix.AN: {}".format(x1,y1, y1_new,x2,y2,y2_new,kB,kC,res_matrix.AN))
+                if (y1 != y1_new and y2 != y2_new):#if (kB == self.JR[i] and kC == matrix.JR[i]): #if (i != kStrok-1) and (kB == self.JR[i+1] and kC == matrix.JR[i+1]):
+                    print("BREAK rowborder")
+                    break
+                elif kB == N_1 and kC == N_2:
+                    print("BREAK matrixend")
+                    break
+            print("NEW ROW")
+            #while (kB != self.JR[i] and kC != matrix.JR[i]) and (kB != N_1 or kC != N_2):
+        
+        print()
+        
+        res_matrix.print_info()
+
+    def addition_fail(self, matrix):
         res_matrix = SparseCRM()
         if (len(self.JR) != len(matrix.JR)) or (len(self.JC) != len(matrix.JC)): #проверяем размерность
             raise ValueError("(self.JR != matrix.JR) or (self.CR != matrix.CR)")
@@ -102,6 +161,7 @@ class SparseCRM():
                 x1 = self._find_x_coord(kB)
                 x2 = matrix._find_x_coord(kC)
                 if x1 != x2: #ЗДЕСЬ ПЕРВАЯ ЗВЕЗДОЧКА!!!
+                    print("=> x1 != x2")
                     if x2 > x1: #перепишем эелмент из self.AN, на который указывает kB, в res_matrix.AN, поскольку он оказалеся непарным и "стоит левее"
                         res_matrix.AN.append(self.AN[kB])
                         kB += 1
@@ -109,6 +169,7 @@ class SparseCRM():
                         res_matrix.AN.append(matrix.AN[kC])
                         kC += 1
                 else:
+                    print("=> x1 == x2")
                     elem_sum = self.AN[kB] + matrix.AN[kC]
                     if elem_sum: #если сумма элементов ненулевая
                         res_matrix.AN.append(elem_sum) #ЗДЕСЬ ВТОРАЯ ЗВЕЗДОЧКА!!!!
@@ -117,6 +178,129 @@ class SparseCRM():
                 print("x1: {}\nx2: {}\nkB: {}\nkC: {}\nres_matrix.AN: {}".format(x1,x2,kB,kC,res_matrix.AN))
             print("NEW ROW")
         
+        print()
+        
+        res_matrix.print_info()
+    
+    def addition_try_3(self, matrix):
+        res_matrix = SparseCRM()
+        if (len(self.JR) != len(matrix.JR)) or (len(self.JC) != len(matrix.JC)): #проверяем размерность
+            raise ValueError("(self.JR != matrix.JR) or (self.CR != matrix.CR)")
+        res_matrix.JR = [-1 for i in self.JR] #инициализируем массив с индексами первых элементов строк значением -1
+        res_matrix.JC = [-1 for i in self.JC] #инициализируем массив с индексами первых элементов столбцов значением -1
+        kStrok = len(self.JR) #записываем количество строк
+        kStolb = len(self.JC) #записываем количество столбцов
+        N_1 = len(self.AN) #записываем количество ненулевых элементов матрицы-первого слагаемого (self)
+        N_2 = len(matrix.AN) #записываем количество ненулевых элементов матрицы-второго слагаемого (matrix)
+        N_res = 0 #счетчик числа элементов в res_matrix.AN и одновременно указатель на последний элемент
+        kB = 0 #указатель на индекс массива AN матрицы-первого слагаемого (self)
+        kC = 0 #указатель на индекс массива AN матрицы-второго слагаемого (matrix)
+
+        for i in range(kStrok): #цикл по строкам от 0 до kStrok-1
+            row_index1 = self.JR[i+1]
+            row_index2 = matrix.JR[i+1]
+            while True:
+                print()
+                print("="*8)
+                print("row_index1: {}, row_index2: {}".format(row_index1, row_index2))
+                x1 = self._find_x_coord(kB)
+                x2 = matrix._find_x_coord(kC)
+                print("x1: {}\nx2: {}\nkB: {}\nkC: {}\nres_matrix.AN: {}".format(x1,x2,kB,kC,res_matrix.AN))
+                if x1 != x2: #ЗДЕСЬ ПЕРВАЯ ЗВЕЗДОЧКА!!!
+                    print("=> x1 != x2", end="   ")
+                    if x2 > x1: #перепишем эелмент из self.AN, на который указывает kB, в res_matrix.AN, поскольку он оказалеся непарным и "стоит левее"
+                        print("x2 > x1 FROM B")
+                        res_matrix.AN.append(self.AN[kB])
+                        kB += 1
+                    elif x1 > x2: #перепишем эелмент из matrix.AN, на который указывает kC, в res_matrix.AN, поскольку он оказалеся непарным и "стоит левее"
+                        print("x1 > x2 FROM C")
+                        res_matrix.AN.append(matrix.AN[kC])
+                        kC += 1
+                else:
+                    print("=> x1 == x2")
+                    elem_sum = self.AN[kB] + matrix.AN[kC]
+                    if elem_sum: #если сумма элементов ненулевая
+                        res_matrix.AN.append(elem_sum) #ЗДЕСЬ ВТОРАЯ ЗВЕЗДОЧКА!!!!
+                    kB += 1
+                    kC += 1
+                print()
+                print("x1: {}\nx2: {}\nkB: {}\nkC: {}\nres_matrix.AN: {}".format(x1,x2,kB,kC,res_matrix.AN))
+                print("="*8)
+                if kB == row_index1 and kC < row_index2:#(i < kStrok-1) and (kB == row_index1): # and kC == row_index2):
+                    while True:
+                        res_matrix.AN.append(matrix.AN[kC])
+                        print("\tkB STOP, iterate kC. kC: {}, res_matrix.AN: {}".format(kC, res_matrix.AN))
+                        kC += 1
+                        if kC == row_index2:
+                            break
+                if kC == row_index2 and kB < row_index1:#(i < kStrok-1) and (kC == row_index2):
+                    while True:
+                        res_matrix.AN.append(self.AN[kB])
+                        print("\tkC STOP, iterate kB. kB: {}, res_matrix.AN: {}".format(kB, res_matrix.AN))
+                        kB += 1
+                        if kB == row_index1:
+                            break
+                if kB == row_index1 and kC == row_index2:
+                    print("BREAK rowborder")
+                    break
+                elif (kB == N_1 and kC == N_2):
+                    print("BREAK matrixend")
+                    break
+            print("NEW ROW")
+        
+        print()
+        
+        res_matrix.print_info()
+    
+    def addition(self, matrix):
+        res_matrix = SparseCRM()
+        if (len(self.JR) != len(matrix.JR)) or (len(self.JC) != len(matrix.JC)): #проверяем размерность
+            raise ValueError("(self.JR != matrix.JR) or (self.CR != matrix.CR)")
+        res_matrix.JR = [-1 for i in self.JR] #инициализируем массив с индексами первых элементов строк значением -1
+        res_matrix.JC = [-1 for i in self.JC] #инициализируем массив с индексами первых элементов столбцов значением -1
+        kStrok = len(self.JR) #записываем количество строк
+        kStolb = len(self.JC) #записываем количество столбцов
+        N_1 = len(self.AN) #записываем количество ненулевых элементов матрицы-первого слагаемого (self)
+        N_2 = len(matrix.AN) #записываем количество ненулевых элементов матрицы-второго слагаемого (matrix)
+        N_res = 0 #счетчик числа элементов в res_matrix.AN и одновременно указатель на последний элемент
+        kB = 0 #указатель на индекс массива AN матрицы-первого слагаемого (self)
+        kC = 0 #указатель на индекс массива AN матрицы-второго слагаемого (matrix)
+        print("N_1: {}, N_2: {}".format(N_1, N_2))
+
+        for i in range(kStrok): #цикл по строкам от 0 до kStrok-1
+            y1 = y1_temp = self._find_y_coord(kB)
+            y2 = y2_temp = matrix._find_y_coord(kC)
+            print("kStrok: {}, y1: {}, y2: {}".format(i, y1, y2))
+            if y1 == y2: #если на одинаковых строках матриц есть элементы, то входим в ветку
+                print("\tBRANCH 1 --- y1 == y2")
+            elif y1 != y2: #если какая-либо из матриц не имеет элементов на строке, то входим в ветку
+                print("\tBRANCH 2 --- y1 != y2")
+                if y2 > y1:
+                    print("\t\tBRANCH 2.1 --- y2 > y1")
+                    while y2 > y1:#(y2 > y1 and kB < N_1):
+                        print("\t\t\tBRANCH 2.1 --- I --- kB: {}, y1: {}, y2: {}, res_matrix: {}".format(kB, y1, y2, res_matrix.AN))
+                        res_matrix.AN.append(self.AN[kB])
+                        if kB+1 < N_1:
+                            kB += 1
+                            y1 = self._find_y_coord(kB)
+                        else:
+                            y1 = N_1
+                            break
+                        print("\t\t\tBRANCH 2.1 --- O --- kB: {}, y1: {}, y2: {}, res_matrix: {}".format(kB, y1, y2, res_matrix.AN))
+                elif y1 > y2:
+                    print("\t\tBRANCH 2.2 --- y1 > y2")
+                    while y1 > y2:#(y1 > y2 and kC < N_2):
+                        print("\t\t\tBRANCH 2.2 --- I ---  kC: {}, y1: {}, y2: {}, res_matrix: {}".format(kC, y1, y2, res_matrix.AN))
+                        res_matrix.AN.append(matrix.AN[kC])
+                        if kC+1 < N_2:
+                            kC += 1
+                            y2 = matrix._find_y_coord(kC)
+                        else:
+                            y2 = N_2
+                            break
+                        print("\t\t\tBRANCH 2.2 --- O ---  kC: {}, y1: {}, y2: {}, res_matrix: {}".format(kC, y1, y2, res_matrix.AN))
+                print()
+
         print()
         
         res_matrix.print_info()
