@@ -34,7 +34,7 @@ class SparseCRM():
         print("JC:", self.JC)
 
     def pack(self, matrix):
-        flag_JR = False
+        flag_JR = False #создаем флаг для первого элемента строки
         rows = len(matrix)
         cols = len(matrix[0])
         temp_row_index = [] #создаем временный массив для хранения координат по AN значений в строках матрицы
@@ -82,49 +82,17 @@ class SparseCRM():
         if verbose: #вывести матрицу на печать
             m_c.sym_matrix_print(unpack_matrix, rows)
         return unpack_matrix
-
-    def addition_fail(self, matrix):
-        res_matrix = SparseCRM()
-        if (len(self.JR) != len(matrix.JR)) or (len(self.JC) != len(matrix.JC)): #проверяем размерность
-            raise ValueError("(self.JR != matrix.JR) or (self.CR != matrix.CR)")
-        res_matrix.JR = [-1 for i in self.JR] #инициализируем массив с индексами первых элементов строк значением -1
-        res_matrix.JC = [-1 for i in self.JC] #инициализируем массив с индексами первых элементов столбцов значением -1
-        kStrok = len(self.JR) #записываем количество строк
-        kStolb = len(self.JC) #записываем количество столбцов
-        N_1 = len(self.AN) #записываем количество ненулевых элементов матрицы-первого слагаемого (self)
-        N_2 = len(matrix.AN) #записываем количество ненулевых элементов матрицы-второго слагаемого (matrix)
-        N_res = 0 #счетчик числа элементов в res_matrix.AN и одновременно указатель на последний элемент
-        kB = 0 #указатель на индекс массива AN матрицы-первого слагаемого (self)
-        kC = 0 #указатель на индекс массива AN матрицы-второго слагаемого (matrix)
-
-        for i in range(kStrok): #цикл по строкам от 0 до kStrok-1
-            while (kB != self.JR[i] and kC != matrix.JR[i]) and (kB != N_1 or kC != N_2):
-                x1 = self._find_x_coord(kB)
-                x2 = matrix._find_x_coord(kC)
-                if x1 != x2: #ЗДЕСЬ ПЕРВАЯ ЗВЕЗДОЧКА!!!
-                    print("=> x1 != x2")
-                    if x2 > x1: #перепишем эелмент из self.AN, на который указывает kB, в res_matrix.AN, поскольку он оказалеся непарным и "стоит левее"
-                        res_matrix.AN.append(self.AN[kB])
-                        kB += 1
-                    elif x1 > x2: #перепишем эелмент из matrix.AN, на который указывает kC, в res_matrix.AN, поскольку он оказалеся непарным и "стоит левее"
-                        res_matrix.AN.append(matrix.AN[kC])
-                        kC += 1
-                else:
-                    print("=> x1 == x2")
-                    elem_sum = self.AN[kB] + matrix.AN[kC]
-                    if elem_sum: #если сумма элементов ненулевая
-                        res_matrix.AN.append(elem_sum) #ЗДЕСЬ ВТОРАЯ ЗВЕЗДОЧКА!!!!
-                    kB += 1
-                    kC += 1
-                print("x1: {}\nx2: {}\nkB: {}\nkC: {}\nres_matrix.AN: {}".format(x1,x2,kB,kC,res_matrix.AN))
-            print("NEW ROW")
-        
-        print()
-        
-        res_matrix.print_info()
     
     def addition(self, matrix):
         res_matrix = SparseCRM()
+        flag_JR = False #создаем флаг для первого элемента строки
+        rows = len(self.JR)
+        cols = len(self.CR)
+        temp_row_index = [] #создаем временный массив для хранения координат по AN значений в строках матрицы
+        temp_col_matrix = [[-1 for i in range(rows)] for j in range(cols)] #создаем временную матрицу для хранения координат по AN значений в столбцах - построчно
+        flags_JC = [False for i in range(cols)] #создаем список с флагами для фиксации первых элементов в столбцах
+
+
         if (len(self.JR) != len(matrix.JR)) or (len(self.JC) != len(matrix.JC)): #проверяем размерность
             raise ValueError("(self.JR != matrix.JR) or (self.CR != matrix.CR)")
         res_matrix.JR = [-1 for i in self.JR] #инициализируем массив с индексами первых элементов строк значением -1
