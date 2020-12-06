@@ -60,7 +60,7 @@ class SparceCRS():
         if (rows != len(matrix.JR)-1) or (self.cols != matrix.cols): #проверяем размерность
             raise ValueError("(self.JR != matrix.JR) or (self.CR != matrix.CR)")
 
-        res_matrix = SparceCRS()#[[0 for i in range(self.cols)] for i in range(rows)]
+        res_matrix = SparceCRS()
         res_matrix.cols = self.cols
 
         FLAG_IsRow = False
@@ -68,34 +68,34 @@ class SparceCRS():
         for i in range(rows):
             FIRST_row = self.JR[i]
             SECOND_row = matrix.JR[i]
-            if FIRST_row == self.JR[i+1] and SECOND_row == matrix.JR[i+1]:
+            if FIRST_row == self.JR[i+1] and SECOND_row == matrix.JR[i+1]: #совпадение индексов означает, что строки пустые
                 res_matrix.JR.append(len(res_matrix.AN))
                 continue
-            while FIRST_row < self.JR[i+1] or SECOND_row < matrix.JR[i+1]:
-                if SECOND_row < matrix.JR[i+1] and FIRST_row < self.JR[i+1]:
-                    if self.JA[FIRST_row] == matrix.JA[SECOND_row]:
+            while FIRST_row < self.JR[i+1] or SECOND_row < matrix.JR[i+1]: #если строки не пустые, то входим в цикл и рассматриваем строку (строки) до ее (их) окончание
+                if SECOND_row < matrix.JR[i+1] and FIRST_row < self.JR[i+1]: #обе строки содержат ненулевые элементы
+                    if self.JA[FIRST_row] == matrix.JA[SECOND_row]: #если х-координаты совпадают
                         FLAG_IsRow = res_matrix._set_pointers(FLAG_IsRow)
                         if self.AN[FIRST_row] + matrix.AN[SECOND_row] != 0:
                             res_matrix.AN.append(self.AN[FIRST_row] + matrix.AN[SECOND_row])
                             res_matrix.JA.append(matrix.JA[SECOND_row])
                         FIRST_row += 1
                         SECOND_row += 1
-                    elif self.JA[FIRST_row] > matrix.JA[SECOND_row]:
+                    elif self.JA[FIRST_row] > matrix.JA[SECOND_row]: #если во второй матрице элемент в строке стоит "левее"
                         FLAG_IsRow = res_matrix._set_pointers(FLAG_IsRow)
                         res_matrix.AN.append(matrix.AN[SECOND_row])
                         res_matrix.JA.append(matrix.JA[SECOND_row])
                         SECOND_row += 1
-                    elif self.JA[FIRST_row] < matrix.JA[SECOND_row]:
+                    elif self.JA[FIRST_row] < matrix.JA[SECOND_row]: #если в первой матрице элемент в строке стоит "левее"
                         FLAG_IsRow = res_matrix._set_pointers(FLAG_IsRow)
                         res_matrix.AN.append(self.AN[FIRST_row])
                         res_matrix.JA.append(self.JA[FIRST_row])
                         FIRST_row += 1
-                elif SECOND_row < matrix.JR[i+1]:
+                elif SECOND_row < matrix.JR[i+1]: #если ненулевая - только строка первой матрицы
                     FLAG_IsRow = res_matrix._set_pointers(FLAG_IsRow)
                     res_matrix.AN.append(matrix.AN[SECOND_row])
                     res_matrix.JA.append(matrix.JA[SECOND_row])
                     SECOND_row += 1
-                elif FIRST_row < self.JR[i+1]:
+                elif FIRST_row < self.JR[i+1]: #если ненулевая - только строка второй матрицы
                     FLAG_IsRow = res_matrix._set_pointers(FLAG_IsRow)
                     res_matrix.AN.append(self.AN[FIRST_row])
                     res_matrix.JA.append(self.JA[FIRST_row])
@@ -118,24 +118,12 @@ class SparceCRS():
 
         for i in range(len(self.JR)-1):
             index = self.JR[i]
-            vals = [0 for i in range(matrix.cols)]#[0 for i in range(len(matrix.JR)-1)]
+            vals = [0 for i in range(matrix.cols)]
 
             while index < self.JR[i+1]:
                 for j in range(len(matrix.JR)-1):
                     if j == self.JA[index] and index < self.JR[i+1]:
                         for k in range(matrix.JR[j], matrix.JR[j+1]):
-                            try:
-                                vals[matrix.JA[k]]
-                            except:
-                                print(1, matrix.JA[k], len(vals))
-                            try:
-                                self.AN[index]
-                            except:
-                                print(2, index)
-                            try:
-                                matrix.AN[k]
-                            except:
-                                print(3, k)
                             vals[matrix.JA[k]] += self.AN[index] * matrix.AN[k]
                         index += 1
                     if index >= self.JR[i+1]:
