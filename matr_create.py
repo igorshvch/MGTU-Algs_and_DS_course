@@ -50,6 +50,25 @@ def sym_matrix_print(matrix, size):
         print("\t", matrix[row])
     print("]")
 
+
+def simple_sum(m1, m2):
+    res_matrix = [[0 for i in range(len(m1[0]))] for i in range(len(m1))]
+    for row in range(len(m1)):
+        for col in range(len(m1[0])):
+            res_matrix[row][col] = m1[row][col] + m2[row][col]
+    sym_matrix_print(res_matrix, len(m1))
+    return res_matrix
+
+
+def simple_mult(a,b):
+    zip_b = zip(*b)
+    zip_b = list(zip_b)
+    res_matrix = [[sum(ele_a*ele_b for ele_a, ele_b in zip(row_a, col_b)) 
+             for col_b in zip_b] for row_a in a]
+    sym_matrix_print(res_matrix, len(res_matrix))
+    return res_matrix
+
+
 if __name__ == '__main__':
     print("="*20)
     print("Module demonstration\n")
