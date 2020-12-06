@@ -1,6 +1,6 @@
 import random
 
-def create_sym_matr(size, def_d_val=None, rd_seed=1, mode="dist"):
+def create_sym_matr(size, def_d_val=None, rd_seed=1, mode="dist", discon_graph_matr=False):
     numerator = random.random()
     options = {
         "dist": lambda: random.randint(1,10),
@@ -12,7 +12,11 @@ def create_sym_matr(size, def_d_val=None, rd_seed=1, mode="dist"):
     for i in range(size):
         for j in range(size):
             if i<j:
-                matr[i][j] = matr[j][i] = options[mode]()
+                if not discon_graph_matr:
+                    val = options[mode]()
+                else:
+                    val = random.choice([None, options[mode]()])
+                matr[i][j] = matr[j][i] = val
             elif i==j:
                 matr[i][i] = def_d_val
     return matr
